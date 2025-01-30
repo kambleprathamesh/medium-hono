@@ -5,7 +5,9 @@ compatibility_date = "2025-01-30"
 # compatibility_flags = [ "nodejs_compat" ]
 
 # [vars]
-# MY_VAR = "my-variable"
+DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiMmE4MzZkYzgtODk5Ni00YmUyLTg2NWItMzExODU3YjM2YzU3IiwidGVuYW50X2lkIjoiNGU4YzgxYjNmNzM0ZGFiZDgyZDk5ODM1NTg0NTJkNDQzOTRiODIwY2JkYzU5NjkwMTlkMGFjZTdlMzMwZWFkNSIsImludGVybmFsX3NlY3JldCI6Ijk5NDZhZDY3LWZjOGYtNGU4ZS04NTU2LTlhMDhlMTNkYjMyZSJ9.6lwXVbzjRdWMSwuDlT0qjK3EFTB8Iz3HjL6NRYg4QIE"
+
+# DIRECT_URL="<YOUR_DATABASE_CONNECTION_STRING>"
 
 # [[kv_namespaces]]
 # binding = "MY_KV_NAMESPACE"
