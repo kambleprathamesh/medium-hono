@@ -1,24 +1,47 @@
-// import { Hono } from 'hono'
+import { PrismaClient } from "@prisma/client/edge";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { Hono } from "hono";
 
-// const app = new Hono()
+type Bindings = {
+  DATABASE_URL: string;
+  JWT_SECRET: string;
+};
 
-// app.get('/', (c) => {
-//   return c.text('Hello Hono!')
-// })
+const app = new Hono<{ Bindings: Bindings }>().basePath("/api/v1");
 
-// export default app
+app.post("/auth/signup", async (c) => {
+  // Ensure the DATABASE_URL is properly set in your environment variables
+ const prisma=new PrismaClient({
+  datasourceUrl:c.env.DATABASE_URL
+ }).$extends(withAccelerate());
+
+  const body = await c.req.json();
+
+  // Check if user already exists
+  const userExist = await prisma.user.findFirst({
+    where: { email: body.email },
+  });
+
+  if (userExist) {
+    return c.json({ message: "User already exists" },200);
+  }
+
+  // Create new user
+  const user = await prisma.user.create({
+    data: {
+      email: body.email,
+      password: body.password, 
+    },
+  });
+
+  return c.json({
+    message: "User created successfully",
+    user,
+  });
+});
 
 
-import{Hono } from "hono";
 
-const app=new Hono().basePath("/api/v1");
-
-
-app.post("/auth/SignUp",(c)=>{return c.text("hello Signup")})
-
-app.post("/auth/sigin",(c)=>{
-  return c.text("Hello Login")
-})
 
 app.post("/blog/post",(c)=>{
   return c.text("greaat posted blog")
@@ -46,3 +69,4 @@ app.get("/blog/bulk",(c)=>{
 });
 
 
+export default app;
