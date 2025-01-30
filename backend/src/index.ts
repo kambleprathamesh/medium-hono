@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
+import bcrypt from 'bcryptjs';
 
 type Bindings = {
   DATABASE_URL: string;
@@ -26,11 +27,15 @@ app.post("/auth/signup", async (c) => {
     return c.json({ message: "User already exists" },200);
   }
 
+
+  const hashPassword=await bcrypt.hash(body.password,10);
+  console.log(hashPassword);
+
   // Create new user
   const user = await prisma.user.create({
     data: {
       email: body.email,
-      password: body.password, 
+      password: hashPassword, 
     },
   });
 
