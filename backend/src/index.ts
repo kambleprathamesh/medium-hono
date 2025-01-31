@@ -17,13 +17,14 @@ app.use("/blog/*", async (c, next) => {
   const header = c.req.header("Authorization")?.split(" ")[1] || "";
   console.log("header", header);
   //verify the header
-  const resposne = await verify(header, c.env.JWT_SECRET);
+  const response = await verify(header, c.env.JWT_SECRET);
+  console.log("Middleware Response of jwt ", response);
   //if not then return 403
-  if (!resposne.id) {
+  if (!response.id) {
     return c.json({ error: "unAuthorised token" }, 403);
   }
 
-  c.set("jwtPayload", resposne.id);
+  c.set("jwtPayload", response.id);
   //if correct proceed
   await next();
 });
@@ -108,11 +109,11 @@ app.post("/auth/sigin", async (c) => {
     const payload = {
       id: userExist.id,
       email: userExist.email,
-      password: userExist.password,
     };
+
     console.log(c.env.JWT_SECRET);
     const jwt = await sign(payload, c.env.JWT_SECRET);
-    console.log(jwt);
+    console.log("jwt", jwt);
 
     return c.json(
       {
@@ -142,6 +143,7 @@ app.post("/blog/post", async (c) => {
   console.log("userId", userId);
   try {
     const body = await c.req.json();
+    console.log(body);
     if (!body.title || !body.content) {
       return c.json({
         error: "please fill all details",
@@ -167,21 +169,121 @@ app.post("/blog/post", async (c) => {
   }
 });
 
-app.put("/blog/update", (c) => {
-  return c.text("Blog updated");
+///upadte blog
+app.put("/blog/update", async (c) => {
+  console.log("Route is reaching here");
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const userId = c.get("jwtPayload");
+    const body = await c.req.json();
+
+    // Check if post exists and belongs to the user
+    const postOfUser = await prisma.post.findUnique({
+      where: {
+        id: body.id,
+      },
+    });
+
+    if (!postOfUser || postOfUser.authorId !== userId) {
+      return c.json({ message: "Post ID not valid or Unauthorized" }, 401);
+    }
+    // Build update data dynamically
+    const data: Record<string, any> = {};
+    if (body.title) data.title = body.title;
+    if (body.content) data.content = body.content;
+    console.log("data", data);
+    const updatePost = await prisma.post.update({
+      where: {
+        id: body.id,
+      },
+      data: data,
+    });
+
+    return c.json(
+      {
+        message: "post updated Suucesfully",
+        updatePost: updatePost,
+      },
+      200
+    );
+  } catch (error) {
+    return c.json(
+      {
+        message: "post not updated",
+        error: error,
+      },
+      500
+    );
+  }
 });
 
-app.get("/blog/get/:id", (c) => {
+//GET POST ON ID
+app.get("/blog/get/:id", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
   const id = c.req.param("id");
-  return c.json({
-    message: `Got Blog for id ${id}`,
-  });
+
+  try {
+    const getPost = await prisma.post.findFirst({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!getPost) {
+      return c.json(
+        {
+          message: `Post Doest not Exist for id ${id}`,
+        },
+        401
+      );
+    }
+
+    return c.json(
+      {
+        message: `Got Blog for id ${id}`,
+      },
+      200
+    );
+  } catch (error) {
+    return c.json(
+      {
+        message: `Something went Wrong`,
+      },
+      500
+    );
+  }
 });
 
-app.get("/blog/bulk", (c) => {
-  return c.json({
-    message: "Retrived all Blogs",
-  });
+
+//GET ALL POST
+app.get("/blog/bulk", async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const getPost = await prisma.post.findMany();
+    if (!getPost) {
+      return c.json({
+        message: "No Post To Show",
+      });
+    }
+    return c.json({
+      message: "Retrived all Blogs",
+      post: getPost,
+    });
+  } catch (error) {
+    return c.json({
+      message: "Something went Wrong",
+      error: error,
+    });
+  }
 });
 
 export default app;
