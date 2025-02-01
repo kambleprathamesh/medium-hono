@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
-import { sign, verify } from "hono/jwt";
+import { verify } from "hono/jwt";
+import { createBlog, updateBlog } from "@prathmeshkamble/medium-common";
 type Bind = {
   DATABASE_URL: string;
   JWT_SECRET: string;
@@ -11,9 +12,8 @@ export const postRouter = new Hono<{
   Bindings: Bind;
 }>();
 
-
 //middleware
-postRouter.use("/*", async (c, next) => {
+postRouter.use("/main/*", async (c, next) => {
   //get the header
   const header = c.req.header("Authorization")?.split(" ")[1] || "";
   console.log("header", header);
@@ -31,7 +31,7 @@ postRouter.use("/*", async (c, next) => {
 });
 
 //create blog
-postRouter.post("/post", async (c) => {
+postRouter.post("/main/post", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   });
@@ -41,10 +41,15 @@ postRouter.post("/post", async (c) => {
   try {
     const body = await c.req.json();
     console.log(body);
-    if (!body.title || !body.content) {
-      return c.json({
-        error: "please fill all details",
-      });
+
+    const { success } = createBlog.safeParse(body);
+    if (!success) {
+      return c.json(
+        {
+          message: "please fill all the details",
+        },
+        400
+      );
     }
 
     const newPost = await prisma.post.create({
@@ -67,7 +72,7 @@ postRouter.post("/post", async (c) => {
 });
 
 ///upadte blog
-postRouter.put("/update", async (c) => {
+postRouter.put("/main/update", async (c) => {
   console.log("Route is reaching here");
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
@@ -76,6 +81,16 @@ postRouter.put("/update", async (c) => {
   try {
     const userId = c.get("jwtPayload");
     const body = await c.req.json();
+
+    const { success } = updateBlog.safeParse(body);
+    if (!success) {
+      return c.json(
+        {
+          message: "please fill all the details",
+        },
+        400
+      );
+    }
 
     // Check if post exists and belongs to the user
     const postOfUser = await prisma.post.findUnique({
@@ -118,7 +133,7 @@ postRouter.put("/update", async (c) => {
 });
 
 //GET POST ON ID
-postRouter.get("/get/:id", async (c) => {
+postRouter.get("/main/get/:id", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());

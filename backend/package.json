@@ -5,6 +5,7 @@
     "deploy": "wrangler deploy --minify"
   },
   "dependencies": {
+    "@prathmeshkamble/medium-common": "^1.2.0",
     "@prisma/client": "^6.3.0",
     "@prisma/extension-accelerate": "^1.2.1",
     "bcrypt": "^5.1.1",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250109.0",
+    "@types/bcryptjs": "^2.4.6",
     "wrangler": "^3.101.0"
   }
 }

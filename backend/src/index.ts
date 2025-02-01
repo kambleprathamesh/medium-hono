@@ -9,8 +9,8 @@ import { postRouter } from "./Routes/post";
 // };
 
 const app = new Hono().basePath("/api/v1");
-app.route("/user/", userRouter);
-app.route("/blog/", postRouter);
+app.route("/user", userRouter);
+app.route("/blog", postRouter);
 //middlewears
 
 export default app;

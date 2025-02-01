@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",

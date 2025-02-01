@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
-import bcrypt from "bcryptjs";
-import { sign, verify } from "hono/jwt";
-import { signupInput } from "@prathmesh/medium-common";
+import  bcrypt from "bcryptjs";
+import { sign } from "hono/jwt";
+import { signupInput, signin } from "@prathmeshkamble/medium-common";
 
 type Binds = {
   DATABASE_URL: string;
@@ -21,7 +21,10 @@ userRouter.post("/auth/signup", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  console.log("USER BODY IN SIGNUP", body);
+
   const { success } = signupInput.safeParse(body);
+  console.log("SUCCESS", success);
   if (!success) {
     return c.json({ message: "Please Fill All Details Correctly" }, 400);
   }
@@ -57,9 +60,12 @@ userRouter.post("/auth/sigin", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   });
-  const body = await c.req.json();
+
   try {
-    if (!body.email || !body.password) {
+    const body = await c.req.json();
+
+    const { success } = signin.safeParse(body);
+    if (!success) {
       return c.json(
         {
           message: "please fill all the details",
