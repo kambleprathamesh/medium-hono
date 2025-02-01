@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import bcrypt from "bcryptjs";
 import { sign, verify } from "hono/jwt";
+import { signupInput } from "@prathmesh/medium-common";
 
 type Binds = {
   DATABASE_URL: string;
@@ -20,6 +21,10 @@ userRouter.post("/auth/signup", async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  const { success } = signupInput.safeParse(body);
+  if (!success) {
+    return c.json({ message: "Please Fill All Details Correctly" }, 400);
+  }
 
   // Check if user already exists
   const userExist = await prisma.user.findFirst({
