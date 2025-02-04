@@ -173,13 +173,24 @@ postRouter.get("/main/get/:id", async (c) => {
 });
 
 //GET ALL POST
-postRouter.get("/bulk", async (c) => {
+postRouter.get("/main/bulk", async (c) => {
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
 
   try {
-    const getPost = await prisma.post.findMany();
+    const getPost = await prisma.post.findMany({
+      select: {
+        content: true,
+        title: true,
+        id: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
     if (!getPost) {
       return c.json({
         message: "No Post To Show",

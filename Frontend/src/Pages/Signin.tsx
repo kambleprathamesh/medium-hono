@@ -1,17 +1,15 @@
-import React from 'react'
-import { Quotes } from '../components/Quotes'
-import { Auth } from '../components/Auth'
-import { signin } from '@prathmeshkamble/medium-common'
+// import React from 'react'
+import { Auth } from "../components/Auth";
+import { Quotes } from "../components/Quotes";
 const Signin = () => {
-  return (
-    <div className='grid grid-cols-2'>
-        <div>SIGNIN </div>
-        <div className='hidden md:block'>
-        <Quotes/>
-        </div>
-        
-        </div>
-  )
-}
+  return <>
+    <div className='grid grid-cols-1 lg:grid-cols-2'>
+      <div><Auth type="SignIn" /> </div>
+      <div className='hidden lg:block'>
+        <Quotes />
+      </div>
+    </div>
+  </>;
+};
 
-export default Signin
+export default Signin;
